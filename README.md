@@ -247,13 +247,42 @@ that produced it:
 **Happy path**
 
 ```
+$ python app.py ask 'white sneakers under $70'
+[1] parse_query
+      in:  white sneakers under $70
+      out: dict with keys: description, size, max_price
+[2] search_listings (via MCP)
+      in:  dict with keys: description, size, max_price
+      out: 6 items: lst_035…
+[3] suggest_outfit
+      in:  dict with keys: new_item, wardrobe_items
+      out: 1. Pair the Low-Top Canvas Sneakers — Off-White with the baggy straight-leg jeans, dark wash, the white ribbed…
+[4] create_fit_card
+      in:  dict with keys: new_item, outfit
+      out: Scored these off-white canvas sneakers on poshmark for only $20 and they are about to be my entire personality…
 
-```
+  Found:    Low-Top Canvas Sneakers — Off-White — $20.0 on poshmark
+
+  Outfit:   1. Pair the Low-Top Canvas Sneakers — Off-White with the baggy straight-leg jeans, dark wash, the white ribbed tank top, and the vintage black denim jacket for a casual streetwear look.
+            2. Style the Low-Top Canvas Sneakers — Off-White with the
 
 **Empty search**
 
 ```
+$ python app.py ask 'designer ballgown size XXS under $5' --trace
+[1] parse_query
+      in:  designer ballgown size XXS under $5
+      out: dict with keys: description, size, max_price
+[2] search_listings (via MCP)
+      in:  dict with keys: description, size, max_price
+      out: [] (empty)
+[3] stop
+      in:  no search results
+      out: No listings matched 'designer ballgown' in size XXS under $5. To widen the search, try fewer or more general w…
 
+  No listings matched 'designer ballgown' in size XXS under $5. To widen the search, try fewer or more general words (e.g. 'dress' instead of 'designer ballgown'); or raise your price limit; or drop the size filter.
+
+0 model calls this session
 ```
 
 **On the MCP move:** <!-- what changed in your code, and whether anything
