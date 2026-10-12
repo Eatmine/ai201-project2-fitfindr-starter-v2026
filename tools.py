@@ -105,15 +105,16 @@ def search_listings(
             if not size_tokens & listing_sizes:
                 continue
 
-        searchable = " ".join([
+        strong_text = " ".join([
             listing.get("title") or "",
-            listing.get("description") or "",
             listing.get("category") or "",
             " ".join(listing.get("style_tags") or []),
             " ".join(listing.get("colors") or []),
         ])
-        words = {w.rstrip("s") or w for w in _tokens(searchable)}
-        score = len(keywords & words)
+        strong = {w.rstrip("s") or w for w in _tokens(strong_text)}
+        weak = {w.rstrip("s") or w for w in _tokens(listing.get("description") or "")}
+        # Title/category/tags/colors count double; description-only matches count once.
+        score = 2 * len(keywords & strong) + len(keywords & (weak - strong))
 
         if score > 0:
             scored.append((score, price if price is not None else float("inf"), listing))
