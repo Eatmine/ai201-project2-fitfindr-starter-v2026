@@ -240,15 +240,15 @@ Scored these vintage Levi's 501 jeans on depop for only $38 and I am never takin
 
 | # | Criterion | Target | Verdict | How I decided |
 |---|---|---|---|---|
-| 1 |  |  |  |  |
-| 2 |  |  |  |  |
-| 3 |  |  |  |  |
-| 4 |  |  |  |  |
-| 5 |  |  |  |  |
-
+| 1 | Matching query completes and returns a fit card | 4 of 5 | MET (5/5) | All 5 tries ended "completed — fit card ___ chars" |
+| 2 | No-match query stops before suggest_outfit, naming what to change | 5 of 5 | MET (5/5) | All 5 traces end at [3] stop with no suggest_outfit step, and the message lists what to change |
+| 3 | selected_item id equals the id suggest_outfit received | 5 of 5 | MET (5/5) | In all 5 tries, search's "first lst_035" matched suggest_outfit's "new_item=lst_035" |
+| 4 | Fit card mentions the platform | 4 of 5 | MET (5/5) | "poshmark" appears in all 5 fit cards |
+| 5 | Every search result is at or under the ceiling | 5 of 5 | MET (5/5) | Search trace showed "highest price $27" against a $30 ceiling in all 5 tries |
 **Diagnoses**
+All five criteria were met. However, for the query "graphic tee under $30", a graphic tee was not selected in any of the 5 tries. Instead, tools.py::search_listings picked the mesh top, which was the cheapest and whose description says it can be layered under a graphic tee. Keywords in the description were scored the same as keywords in the title, so the search ranked the mesh top highly, and it won because its price was lower than the graphic tees'.
 
-
+My targets were too low: all five criteria were met, but the wrong item was still selected, because criterion 5 only checked the price. I would tighten criterion 5 so that it also checks that the first result has "tee" in its title or tags. With that check, the mesh top would have failed in all 5 tries.
 
 ---
 
