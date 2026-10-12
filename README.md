@@ -124,7 +124,7 @@ $ python app.py ask 'vintage graphic tee under $30'
 0 model calls this session, 2 served from cache
 ```
 
-```
+
 **The three tools, tested one at a time**
 
 ```
