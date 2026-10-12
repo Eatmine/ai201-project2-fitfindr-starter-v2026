@@ -59,8 +59,7 @@ A user types what they're shopping for in plain words, like 'vintage graphic tee
 
 - **What it does:** Searches the local clothing catalogue by description keywords, with optional size and maximum-price filters. Keywords are matched as whole words (case-insensitive) against each listing's title, description, category, style_tags and colors. Size matching is whole-token and case-insensitive: "M" matches "S/M", but "S" does not match "US 9" and "L" does not match "XL". The price limit is inclusive.
 - **Inputs:** `description` (str — keywords, e.g. "vintage graphic tee"), `size` (str or None — None skips size filtering), `max_price` (float or None — None skips price filtering)
-- **Returns:** `list[dict]` — matching listings with all 11 fields each (`brand` may be None), ranked by keyword match count, then by lower price, at most `config.SEARCH_RESULT_LIMIT` of them. Listings matching zero keywords are left out.
-- **When it has nothing:** Returns an empty list `[]`, not `None` or an exception — whether no listing matches the keywords or the size/price filters rule out every match. The agent then tells the user nothing matched and stops.
+- **Returns:** `list[dict]` — matching listings with all 11 fields each (`brand` may be None), ranked by keyword score (matches in title, category, style_tags or colors count double; description-only matches count once), then by lower price, at most `config.SEARCH_RESULT_LIMIT` of them. Listings matching zero keywords are left out.
 
 ### `suggest_outfit`
 
@@ -245,6 +244,7 @@ Scored these vintage Levi's 501 jeans on depop for only $38 and I am never takin
 | 3 | selected_item id equals the id suggest_outfit received | 5 of 5 | MET (5/5) | In all 5 tries, search's "first lst_035" matched suggest_outfit's "new_item=lst_035" |
 | 4 | Fit card mentions the platform | 4 of 5 | MET (5/5) | "poshmark" appears in all 5 fit cards |
 | 5 | Every search result is at or under the ceiling | 5 of 5 | MET (5/5) | Search trace showed "highest price $27" against a $30 ceiling in all 5 tries |
+
 **Diagnoses**
 All five criteria were met. However, for the query "graphic tee under $30", a graphic tee was not selected in any of the 5 tries. Instead, tools.py::search_listings picked the mesh top, which was the cheapest and whose description says it can be layered under a graphic tee. Keywords in the description were scored the same as keywords in the title, so the search ranked the mesh top highly, and it won because its price was lower than the graphic tees'.
 
@@ -351,29 +351,21 @@ Found Mesh Long-Sleeve Top — Black, but couldn't reach the model to suggest ou
 
 ## The Improvement
 
-<!-- What you changed, why your diagnosis pointed at it, and the after-run in
-     the same table format. One change, measured properly.
+**What I changed:** In `tools.py::search_listings`, keyword matches in a listing's title, category, style_tags or colors now count double, and matches that appear only in the description count once. Before, every match counted the same no matter where it appeared.
 
-     `python run_eval.py --label after` -->
-
-**What I changed:**
-
-**Which failure it was meant to fix:**
+**Which failure it was meant to fix:** In the before run, the query "graphic tee under $30" picked the Mesh Long-Sleeve Top (lst_017) in all 5 tries. Its title says it's a mesh top, but its description mentions "layering under a graphic tee", so it tied with the real graphic tees and won on price ($15).
 
 ### Run Log — After
 
 | Criterion | Target | Try 1 | Try 2 | Try 3 | Try 4 | Try 5 | Verdict |
 |---|---|---|---|---|---|---|---|
-| 1.  |  |  |  |  |  |  |  |
-| 2.  |  |  |  |  |  |  |  |
-| 3.  |  |  |  |  |  |  |  |
-| 4.  |  |  |  |  |  |  |  |
-| 5.  |  |  |  |  |  |  |  |
+| 1. Matching query completes all three tools and returns a fit card | 4 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 2. No-match query stops before suggest_outfit with a message naming what to change | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 3. session["selected_item"]["id"] equals the id suggest_outfit received | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 4. Fit card mentions the listing's platform | 4 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 5. Every search result is at or under the price ceiling | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
 
-**Did it help, and how do I know:**
-
-<!-- If it made things worse, say that. Honestly reported, that earns full
-     credit and is more interesting than one that worked. -->
+**Did it help, and how do I know:** Yes, for the problem it targeted. In the after run (`results/run_2026-10-12_1701_after.md`), "graphic tee under $30" picked the Y2K Baby Tee (lst_002) instead of the mesh top in all 5 tries; the trace line changed from "first lst_017" to "first lst_002". The other scenarios picked the same items as before, so nothing got worse. My five criteria didn't change (all MET before and after), because none of them checks which item is picked, which is why I'd tighten criterion 5 as described in my diagnosis.
 
 
 
