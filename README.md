@@ -92,13 +92,13 @@
      The grader checks your code against what you claim here, so the file and
      function have to be real. -->
 
-**Branch rule:**
+**Branch rule:** If `search_listings` returns an empty list, put a message in the session saying no listings matched and stop. Otherwise, take the first result (best keyword match, cheapest on a tie) and go to `suggest_outfit`, then `create_fit_card`.
 
 **Where it lives:** `agent.py::run_agent`
 
-**How the query is parsed:** <!-- regex, string splitting, or asking the model — say which -->
+**How the query is parsed:** Regex and string splitting, no model call. A regex pulls the price ceiling from phrases like "under $30" into `max_price`, and a regex pulls a size like "size M" into `size`. The rest of the query, lowercased and split on spaces, becomes the keywords.
 
-**What moves through the session:** <!-- which fields, in what order -->
+**What moves through the session:** `query` → `results` (from `search_listings`) → `selected` (the first result) → `outfit` (from `suggest_outfit`) → `fit_card` (from `create_fit_card`). If search finds nothing, `error` holds the no-match message and the later fields stay empty.
 
 ---
 
