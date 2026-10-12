@@ -90,13 +90,13 @@ A user types what they're shopping for in plain words, like 'vintage graphic tee
      The grader checks your code against what you claim here, so the file and
      function have to be real. -->
 
-**Branch rule:** If `search_listings` returns an empty list, put a message in the session saying no listings matched and stop. Otherwise, take the first result (best keyword match, cheapest on a tie) and go to `suggest_outfit`, then `create_fit_card`.
+**Branch rule:** If `search_listings` returns an empty list, put a message in `session["error"]` saying what the user could change (fewer or more general words, a higher price limit, or no size filter) and stop, leaving `fit_card` as `None`. Otherwise, take the first result (best keyword match, cheapest on a tie), store it in `session["selected_item"]`, and go to `suggest_outfit`, then `create_fit_card`.
 
 **Where it lives:** `agent.py::run_agent`
 
-**How the query is parsed:** Regex and string splitting, no model call. A regex pulls the price ceiling from phrases like "under $30" into `max_price`, and a regex pulls a size like "size M" into `size`. The rest of the query, lowercased and split on spaces, becomes the keywords.
+**How the query is parsed:** Regex and string splitting, no model call (`agent.py::_parse_query`). A regex pulls the price ceiling from phrases like "under $30" into `max_price`, and a regex pulls a size like "size M" into `size`. The rest of the query is lowercased and split into words, filler words like "looking", "for" and "a" are dropped, and what's left becomes the description.
 
-**What moves through the session:** `query` → `results` (from `search_listings`) → `selected` (the first result) → `outfit` (from `suggest_outfit`) → `fit_card` (from `create_fit_card`). If search finds nothing, `error` holds the no-match message and the later fields stay empty.
+**What moves through the session:** `query` → `parsed` (description, size, max_price) → `search_results` (from `search_listings`) → `selected_item` (the first result) → `outfit_suggestion` (from `suggest_outfit`) → `fit_card` (from `create_fit_card`). If search finds nothing, `error` holds a message saying what to change, and the later fields stay `None`.
 
 ---
 
@@ -155,15 +155,15 @@ Scored these vintage Levi's 501 jeans on depop for only $38 and I am never takin
 
 **Moment 1**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* I asked Claude to check my state criterion (criterion 3). My draft said the selected item should show up as an option in the suggested outfit.
+- *What came back:* It pointed out that the model can reword item names, so I couldn't check it without interpretation, and that if the wrong listing reached suggest_outfit, the outfit would still mention "the item" and the check would pass anyway.
+- *What I changed:* I rewrote the criterion to compare `session["selected_item"]["id"]` against the id of the listing suggest_outfit received, and set the target to 5 of 5, since no model is involved.
 
 **Moment 2**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* I tested `search_listings('graphic tee', max_price=30)` and asked Claude to check the output.
+- *What came back:* All prices were under $30, but the first result was a black mesh top, not a graphic tee. It ranked first because its description says "layering under a graphic tee", which tied it with the real tees, and it was the cheapest.
+- *What I changed:* I kept the scoring, since it matches my spec (keyword count, then lower price), and recorded it as a known weakness to fix in unit 4. With a full query like "vintage graphic tee", the real graphic tee ranks first.
 
 <!-- ═══════════════════════ UNIT 4 — THE TEST ═══════════════════════
 
