@@ -44,6 +44,9 @@ Given a query that matches no listings, the agent stops before calling
 
 ## 3. Something about state
 
+Given a query that matches at least one listing, session["selected_item"]["id"]
+   equals the id of the listing suggest_outfit received — 5 of 5 tries.
+
 <!-- YOU WRITE THIS ONE.
 
      How would you know that the item your search found is the same item the
@@ -56,7 +59,7 @@ Given a query that matches no listings, the agent stops before calling
 
 
 
-**Why this target:**
+**Why this target:** 5 of 5 because the model is not involved, so any failure would catch a bug in my code.
 
 
 
@@ -64,20 +67,12 @@ Given a query that matches no listings, the agent stops before calling
 
 ## 4. Something about the fit card
 
-<!-- YOU WRITE THIS ONE.
-
-     The fit card calls a model, so the same input can produce different words
-     each time. That's not a bug — it's the nature of the tool. So what would
-     make it acceptable?
-
-     Think about what you'd actually be unhappy to see. A caption that never
-     mentions the price? Two different items producing the same opening
-     sentence? A card longer than a caption anyone would post? Any of those can
-     be turned into a number. -->
+4. Given a query that matches at least one listing, the fit card mentions the
+   listing's platform (ignoring capitalization) — in at least 4 of 5 tries.
 
 
 
-**Why this target:**
+**Why this target:** One miss is allowed because the fit card is written by the model, which can occasionally leave out details even when the prompt asks for them.
 
 
 
@@ -85,16 +80,13 @@ Given a query that matches no listings, the agent stops before calling
 
 ## 5. Your choice
 
-<!-- YOU WRITE THIS ONE TOO.
-
-     Pick something you actually care about getting right. Speed, the empty
-     wardrobe path, what happens when the model can't be reached, whether the
-     search respects a price ceiling — anything, as long as it names a number
-     or an observable outcome. -->
+5. Given a query with a price ceiling that matches at least one listing, every
+   listing search_listings returns has a price less than or equal to the
+   ceiling — 5 of 5 tries.
 
 
 
-**Why this target:**
+**Why this target:** 5 of 5 because it's a comparison my code does, with no model involved, so any miss would mean a bug in my code. A miss would show up as a returned listing priced above the ceiling.
 
 
 
