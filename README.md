@@ -264,7 +264,12 @@ $ python app.py ask 'white sneakers under $70'
   Found:    Low-Top Canvas Sneakers — Off-White — $20.0 on poshmark
 
   Outfit:   1. Pair the Low-Top Canvas Sneakers — Off-White with the baggy straight-leg jeans, dark wash, the white ribbed tank top, and the vintage black denim jacket for a casual streetwear look.
-            2. Style the Low-Top Canvas Sneakers — Off-White with the
+2. Style the Low-Top Canvas Sneakers — Off-White with the wide-leg khaki trousers, the oversized grey crewneck sweatshirt, and the brown leather belt for an effortless earth-tone outfit.
+
+  Fit card: Scored these off-white canvas sneakers on poshmark for only $20 and they are about to be my entire personality. They bring that perfect worn-in, effortless energy to both baggy denim streetwear fits and oversized neutral loungewear. Seriously obsessed with how easy they are to style.
+
+2 model calls this session, 573 prompt + 143 output tokens
+```
 
 **Empty search**
 
@@ -285,10 +290,10 @@ $ python app.py ask 'designer ballgown size XXS under $5' --trace
 0 model calls this session
 ```
 
-**On the MCP move:** <!-- what changed in your code, and whether anything
-behaved differently afterwards. If the rewire didn't work, say exactly where it
-broke — the error text and the last thing that worked. That earns the point in
-full. -->
+**On the MCP move:** 
+I registered `search_listings` in `mcp_server.py` with a description written for an outside agent, and confirmed it with `python mcp_client.py`. In `agent.py::run_agent` I replaced the direct `search_listings(...)` call with `call_tool("search_listings", {...})`. Both paths behaved the same afterwards: the happy path still picked the Y2K Baby Tee ($18, depop), and the no-match query still stopped with the same message. So the tool was already returning a plain list of listing dicts, which MCP passed through unchanged.
+
+
 
 
 
