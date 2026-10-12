@@ -332,3 +332,8 @@ full. -->
 ---
 
 📖 **How to run this project: [RUNNING.md](RUNNING.md)**
+
+## Milestone 1 notes
+- A listing has 11 fields; key ones for search: price, category, style_tags
+- A wardrobe item has 6 fields; it shares category, colors and style_tags with listings
+- Listings are items for sale; the wardrobe is what the user already owns
