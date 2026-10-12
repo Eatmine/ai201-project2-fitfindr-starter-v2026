@@ -185,18 +185,38 @@ Scored these vintage Levi's 501 jeans on depop for only $38 and I am never takin
 
 | Criterion | Target | Try 1 | Try 2 | Try 3 | Try 4 | Try 5 | Verdict |
 |---|---|---|---|---|---|---|---|
-| 1.  |  |  |  |  |  |  |  |
-| 2.  |  |  |  |  |  |  |  |
-| 3.  |  |  |  |  |  |  |  |
-| 4.  |  |  |  |  |  |  |  |
-| 5.  |  |  |  |  |  |  |  |
+| 1. Matching query completes all three tools and returns a fit card | 4 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 2. No-match query stops before suggest_outfit with a message naming what to change | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 3. session["selected_item"]["id"] equals the id suggest_outfit received | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 4. Fit card mentions the listing's platform | 4 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
+| 5. Every search result is at or under the price ceiling | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
 
-**Real output from one try**, pasted as text, naming the file and function
-that produced it:
-
-```
+**Real output from one try**,From `results/run_2026-10-12_1647_before.md`, produced by `agent.py::run_agent` (search via `mcp_server.py::search_listings` → `tools.py::search_listings`):
 
 ```
+# Criterion 1 — matching query completes (try 1)
+[2] search_listings (via MCP)   out: 10 items, highest price $26, first lst_002
+[3] suggest_outfit              in:  new_item=lst_002, wardrobe_items=10
+[4] create_fit_card             out: Found this lil butterfly print baby tee scrolling on depop at 2 AM and couldn't pass it up for $18. Currently …
+  try 1: completed — fit card 230 chars
+
+# Criterion 2 — impossible query stops early (try 1)
+[2] search_listings (via MCP)   out: [] (empty)
+[3] stop                        out: No listings matched 'designer ballgown' in size XXS under $5. To widen the search, try fewer or more general w…
+  try 1: stopped early — No listings matched 'designer ballgown' in size XXS under $5
+
+# Criterion 3 — selected item reaches suggest_outfit (try 1)
+[2] search_listings (via MCP)   out: 6 items, highest price $48, first lst_035
+[3] suggest_outfit              in:  new_item=lst_035, wardrobe_items=10
+
+# Criterion 4 — fit card mentions platform (try 1)
+[4] create_fit_card             out: Finally tracked down this cropped light wash denim jacket on poshmark for $42 and my outfit planning is offici…
+
+# Criterion 5 — price ceiling respected (try 1)
+[1] parse_query                 in:  graphic tee under $30
+[2] search_listings (via MCP)   out: 7 items, highest price $27, first lst_017
+```
+
 
 ---
 
