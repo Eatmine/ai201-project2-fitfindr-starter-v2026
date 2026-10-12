@@ -56,25 +56,24 @@
      The empty case isn't optional either — it's the thing your loop branches
      on, and if you don't decide it here you'll discover it as a crash in
      Milestone 5. -->
-
 ### `search_listings`
 
-- **What it does:** Searches the local clothing catalogue by description keywords, with optional size and maximum-price filters; size matching uses whole tokens and the price limit is inclusive.
-- **Inputs:** `query` (str), `max_price` (float or None), `category` (str or None)
-- **Returns:** `list[dict]` — matching listings with all 11 fields each, ranked by keyword match count, then by lower price. Returns `[]` when nothing matches — never `None`, never an error.
+- **What it does:** Searches the local clothing catalogue by description keywords, with optional size and maximum-price filters. Keywords are matched as whole words (case-insensitive) against each listing's title, description, category, style_tags and colors. Size matching is whole-token and case-insensitive: "M" matches "S/M", but "S" does not match "US 9" and "L" does not match "XL". The price limit is inclusive.
+- **Inputs:** `description` (str — keywords, e.g. "vintage graphic tee"), `size` (str or None — None skips size filtering), `max_price` (float or None — None skips price filtering)
+- **Returns:** `list[dict]` — matching listings with all 11 fields each (`brand` may be None), ranked by keyword match count, then by lower price, at most `config.SEARCH_RESULT_LIMIT` of them. Listings matching zero keywords are left out.
 - **When it has nothing:** Returns an empty list `[]`, not `None` or an exception — whether no listing matches the keywords or the size/price filters rule out every match. The agent then tells the user nothing matched and stops.
 
 ### `suggest_outfit`
 
 - **What it does:** Suggests two outfits built around a selected listing, using items from the user's wardrobe when available.
-- **Inputs:** `listing` (dict — one listing, all 11 fields), `wardrobe` (list of dicts — the user's wardrobe items, may be empty)
-- **Returns:** A non-empty `str` with exactly two outfit suggestions. When the wardrobe has items, it names them using their `name` field exactly.
-- **When it has nothing:** If the wardrobe is empty, it still returns two general outfit ideas and says they are general because no wardrobe is saved. If the model can't be reached, the error is raised rather than returned as text, so the agent can report it.
+- **Inputs:** `new_item` (dict — one listing, all 11 fields), `wardrobe` (dict — has an `items` key holding a list of wardrobe items; the list may be empty)
+- **Returns:** A non-empty `str` with exactly two numbered outfit suggestions. When the wardrobe has items, it names them using their `name` field exactly.
+- **When it has nothing:** If the wardrobe is empty, it still returns two general outfit ideas, starting with a note that they are general because no wardrobe is saved. If the model can't be reached, the error is raised rather than returned as text, so the agent can report it.
 
 ### `create_fit_card`
 
 - **What it does:** Writes a short social-media-style caption about the selected second-hand find and how it could be worn.
-- **Inputs:** `listing` (dict — the listing the card is about, all 11 fields), `outfit` (str — the result from `suggest_outfit` for that listing)
+- **Inputs:** `outfit` (str — the result from `suggest_outfit` for that listing), `new_item` (dict — the listing the card is about, all 11 fields)
 - **Returns:** A `str` of two to four sentences that includes the price written with digits (e.g. `$38`) and the listing's `platform`.
 - **When it has nothing:** If `outfit` is empty or whitespace, returns the fixed message "Couldn't build a fit card for this listing." without calling the model or raising. If the model can't be reached, the error is raised so the agent can report it.
 ---
