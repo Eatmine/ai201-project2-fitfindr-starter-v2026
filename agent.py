@@ -182,7 +182,12 @@ def run_agent(query: str, wardrobe: dict) -> dict:
             trace.step(
                 "search_listings (via MCP)",
                 inputs=search_args,
-                returned=[r["id"] for r in session["search_results"]],
+                returned=(
+                    f"{len(session['search_results'])} items, highest price "
+                    f"${max(r['price'] for r in session['search_results']):g}, "
+                    f"first {session['search_results'][0]['id']}"
+                    if session["search_results"] else []
+                ),
             )
 
             # THE BRANCH: nothing found -> explain what to change, and stop.
