@@ -294,7 +294,37 @@ $ python app.py ask 'designer ballgown size XXS under $5' --trace
 I registered `search_listings` in `mcp_server.py` with a description written for an outside agent, and confirmed it with `python mcp_client.py`. In `agent.py::run_agent` I replaced the direct `search_listings(...)` call with `call_tool("search_listings", {...})`. Both paths behaved the same afterwards: the happy path still picked the Y2K Baby Tee ($18, depop), and the no-match query still stopped with the same message. So the tool was already returning a plain list of listing dicts, which MCP passed through unchanged.
 
 
+**Failure modes, triggered on purpose**
 
+*Empty search*: `python app.py ask 'designer ballgown size XXS under $5'`
+```
+No listings matched 'designer ballgown' in size XXS under $5. To widen the search, try fewer or more general words (e.g. 'dress' instead of 'designer ballgown'); or raise your price limit; or drop the size filter.
+
+0 model calls this session
+```
+Handled by the branch in `agent.py::run_agent`. It stops before `suggest_outfit`.
+
+*Empty wardrobe*: `python app.py ask 'vintage graphic tee under $30' --empty-wardrobe`
+```
+Outfit:   No wardrobe saved, so these are general styling ideas:
+
+1. Pair the baby tee with low-rise medium-wash flare jeans, white platform sneakers, and a pink shoulder bag for a quintessential Y2K mall-rat look.
+2. Layer the top over a tiered white lace midi skirt with chunky black combat boots and a beaded choker for a sweet cottagecore-grunge contrast.
+```
+Handled in `tools.py::suggest_outfit`. It returns general ideas instead of crashing or returning "".
+
+*Model unavailable* (one character of the key changed):
+
+Before the handler, `run_agent` crashed and `app.py` printed only:
+```
+ModelUnavailable: The model rejected your API key. Check GEMINI_API_KEY in your .env file, or create a fresh key at aistudio.google.com.
+```
+The search result was lost. I added a `try/except ModelUnavailable` around both model steps in `agent.py::run_agent`. After the handler, `python app.py ask 'striped long sleeve top size M under $45'` printed:
+```
+Found Mesh Long-Sleeve Top — Black, but couldn't reach the model to suggest outfits (The model rejected your API key. Check GEMINI_API_KEY in your .env file, or create a fresh key at aistudio.google.com.). Check GEMINI_API_KEY in your .env file and your internet connection, then try again.
+
+1 model calls this session
+```
 
 
 ---
