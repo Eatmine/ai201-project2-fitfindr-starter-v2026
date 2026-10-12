@@ -230,5 +230,23 @@ def create_fit_card(outfit: str, new_item: dict) -> str:
     Test it from a terminal before you move on:
         python -c "from tools import create_fit_card; from utils.data_loader import load_listings; print(create_fit_card('jeans and white sneakers', load_listings()[0]))"
     """
-    # TODO: replace this with your implementation
-    return ""
+    if not outfit or not outfit.strip():
+        return "Couldn't build a fit card for this listing."
+
+    price = new_item.get("price")
+    price_text = _format_price(price) if price is not None else "an unknown price"
+    platform = new_item.get("platform")
+
+    prompt = (
+        "Write a caption someone would actually post on social media about a "
+        "second-hand find. It should read like a real post, not a product "
+        "description, and be specific about the vibe.\n\n"
+        f"Item: {new_item.get('title')}\n"
+        f"Price: {price_text}\n"
+        f"Platform: {platform}\n"
+        f"How they're styling it: {outfit.strip()}\n\n"
+        f"Rules: 2 to 4 sentences. Mention the item, the price written exactly "
+        f"as {price_text}, and the platform {platform}, once each. "
+        "Return only the caption."
+    )
+    return generate(prompt).strip()
