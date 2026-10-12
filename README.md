@@ -39,8 +39,7 @@
 
 ## What This Does
 
-<!-- Three or four sentences: what a user asks for, and what they get back. -->
-
+A user types what they're shopping for in plain words, like 'vintage graphic tee under $30', optionally with a size. FitFindr searches 40 secondhand listings from Depop, Poshmark and thredUp, filters by price and size, and picks the best keyword match. It then suggests two outfits that pair the find with pieces from the user's own wardrobe, and writes a short social-media caption with the price and where to buy it. If nothing matches, it stops and tells the user what to change, like raising the price limit or using more general words.
 
 
 ---
