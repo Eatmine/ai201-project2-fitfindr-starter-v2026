@@ -12,7 +12,7 @@ Build and test your three tools in `tools.py` first. Then come here.
 
     python agent.py          runs both example paths below
 """
-
+import re
 import config
 import trace
 from tools import search_listings, suggest_outfit, create_fit_card
@@ -45,6 +45,58 @@ def new_session(query: str, wardrobe: dict) -> dict:
         "fit_card": None,            # what create_fit_card returned
         "error": None,               # set when the run ended early
     }
+
+# ── query parsing (regex + string splitting, no model call) ──────────────────
+
+_PRICE_RE = re.compile(
+    r"\b(?:under|below|less than|max|up to)\s*\$?\s*(\d+(?:\.\d+)?)", re.IGNORECASE
+)
+_SIZE_RE = re.compile(r"\bsize\s+([a-z0-9/]+)", re.IGNORECASE)
+_FILLER = {
+    "a", "an", "the", "i", "im", "i'm", "want", "need", "looking", "for",
+    "some", "something", "in", "with", "and", "or", "of", "to", "me", "find",
+    "please", "any", "anything", "that", "is",
+}
+
+
+def _parse_query(query: str) -> dict:
+    """'vintage graphic tee under $30, size M' ->
+       {'description': 'vintage graphic tee', 'size': 'M', 'max_price': 30.0}"""
+    text = query or ""
+
+    price_match = _PRICE_RE.search(text)
+    max_price = float(price_match.group(1)) if price_match else None
+    text = _PRICE_RE.sub(" ", text)
+
+    size_match = _SIZE_RE.search(text)
+    size = size_match.group(1).upper() if size_match else None
+    text = _SIZE_RE.sub(" ", text)
+
+    words = re.findall(r"[a-z0-9']+", text.lower())
+    description = " ".join(w for w in words if w not in _FILLER)
+
+    return {"description": description, "size": size, "max_price": max_price}
+
+
+def _no_match_message(parsed: dict) -> str:
+    """Says what was searched for and what the user could change."""
+    parts = [f"'{parsed['description']}'" if parsed["description"] else "your search"]
+    if parsed["size"]:
+        parts.append(f"in size {parsed['size']}")
+    if parsed["max_price"] is not None:
+        parts.append(f"under ${parsed['max_price']:g}")
+
+    tips = []
+    if not parsed["description"]:
+        tips.append("add a word for the kind of item you want (e.g. 'tee', 'jeans')")
+    else:
+        tips.append("try fewer or more general words (e.g. 'dress' instead of 'designer ballgown')")
+    if parsed["max_price"] is not None:
+        tips.append("raise your price limit")
+    if parsed["size"]:
+        tips.append("drop the size filter")
+
+    return f"No listings matched {' '.join(parts)}. To widen the search, " + "; or ".join(tips) + "."
 
 
 # ── planning loop ─────────────────────────────────────────────────────────────
@@ -107,10 +159,40 @@ def run_agent(query: str, wardrobe: dict) -> dict:
     """
     session = new_session(query, wardrobe)
 
-    # TODO: delete these two lines and build the loop.
-    session["error"] = "The planning loop isn't built yet — see the TODO in agent.py."
-    return session
+    step = "search"
+    count = 0
 
+    while True:
+        count += 1
+        trace.check_iterations(count)
+
+        if step == "search":
+            session["parsed"] = _parse_query(session["query"])
+            parsed = session["parsed"]
+            session["search_results"] = search_listings(
+                parsed["description"], parsed["size"], parsed["max_price"]
+            )
+
+            # THE BRANCH: nothing found -> explain what to change, and stop.
+            if not session["search_results"]:
+                session["error"] = _no_match_message(parsed)
+                return session
+
+            session["selected_item"] = session["search_results"][0]
+            step = "suggest"
+
+        elif step == "suggest":
+            # Read the item and wardrobe back OUT of the session.
+            session["outfit_suggestion"] = suggest_outfit(
+                session["selected_item"], session["wardrobe"]
+            )
+            step = "card"
+
+        elif step == "card":
+            session["fit_card"] = create_fit_card(
+                session["outfit_suggestion"], session["selected_item"]
+            )
+            return session
 
 # ── running it directly ───────────────────────────────────────────────────────
 
