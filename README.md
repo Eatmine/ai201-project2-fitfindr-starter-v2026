@@ -61,6 +61,8 @@ A user types what they're shopping for in plain words, like 'vintage graphic tee
 - **Inputs:** `description` (str — keywords, e.g. "vintage graphic tee"), `size` (str or None — None skips size filtering), `max_price` (float or None — None skips price filtering)
 - **Returns:** `list[dict]` — matching listings with all 11 fields each (`brand` may be None), ranked by keyword score (matches in title, category, style_tags or colors count double; description-only matches count once), then by lower price, at most `config.SEARCH_RESULT_LIMIT` of them. Listings matching zero keywords are left out.
 
+- **When it has nothing:** Returns an empty list `[]`, not `None` or an exception — whether no listing matches the keywords or the size/price filters rule out every match. The agent then tells the user nothing matched and stops.
+
 ### `suggest_outfit`
 
 - **What it does:** Suggests two outfits built around a selected listing, using items from the user's wardrobe when available.
@@ -190,7 +192,8 @@ Scored these vintage Levi's 501 jeans on depop for only $38 and I am never takin
 | 4. Fit card mentions the listing's platform | 4 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
 | 5. Every search result is at or under the price ceiling | 5 of 5 | PASS | PASS | PASS | PASS | PASS | MET (5/5) |
 
-**Real output from one try**,From `results/run_2026-10-12_1647_before.md`, produced by `agent.py::run_agent` (search via `mcp_server.py::search_listings` → `tools.py::search_listings`):
+**Real output from one try**
+From `results/run_2026-10-12_1647_before.md`, produced by `agent.py::run_agent` (search via `mcp_server.py::search_listings` → `tools.py::search_listings`):
 
 ```
 # Criterion 1 — matching query completes (try 1)
@@ -246,6 +249,7 @@ Scored these vintage Levi's 501 jeans on depop for only $38 and I am never takin
 | 5 | Every search result is at or under the ceiling | 5 of 5 | MET (5/5) | Search trace showed "highest price $27" against a $30 ceiling in all 5 tries |
 
 **Diagnoses**
+
 All five criteria were met. However, for the query "graphic tee under $30", a graphic tee was not selected in any of the 5 tries. Instead, tools.py::search_listings picked the mesh top, which was the cheapest and whose description says it can be layered under a graphic tee. Keywords in the description were scored the same as keywords in the title, so the search ranked the mesh top highly, and it won because its price was lower than the graphic tees'.
 
 My targets were too low: all five criteria were met, but the wrong item was still selected, because criterion 5 only checked the price. I would tighten criterion 5 so that it also checks that the first result has "tee" in its title or tags. With that check, the mesh top would have failed in all 5 tries.
