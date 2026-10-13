@@ -166,6 +166,13 @@ Scored these vintage Levi's 501 jeans on depop for only $38 and I am never takin
 - *What came back:* All prices were under $30, but the first result was a black mesh top, not a graphic tee. It ranked first because its description says "layering under a graphic tee", which tied it with the real tees, and it was the cheapest.
 - *What I changed:* I kept the scoring, since it matches my spec (keyword count, then lower price), and recorded it as a known weakness to fix in unit 4. With a full query like "vintage graphic tee", the real graphic tee ranks first.
 
+
+**Moment 3**
+
+- *What I asked for:* After the first before-run, I asked Claude to help me mark criterion 5 (every result under the price ceiling).
+- *What came back:* It pointed out the trace only printed the first listing's id ("7 items: lst_017…"), not any prices, so the run couldn't actually show whether criterion 5 passed.
+- *What I changed:* I changed the search step's trace in `agent.py::run_agent` to print the highest price returned ("7 items, highest price $27, first lst_017") and reran the eval, so the run log has real evidence for criterion 5.
+
 <!-- ═══════════════════════ UNIT 4 — THE TEST ═══════════════════════
 
      Don't fill these in during unit 3.
