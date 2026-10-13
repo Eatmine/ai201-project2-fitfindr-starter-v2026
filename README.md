@@ -377,10 +377,12 @@ Found Mesh Long-Sleeve Top — Black, but couldn't reach the model to suggest ou
 
 ## What's Still Broken
 
-<!-- For each criterion still missed: what you'd do, and why you stopped where
-     you did. "I ran out of time" is fine if it's true. Pretending nothing is
-     left is not. -->
+No criterion missed in either run, but these are still broken or untested:
 
+- **Criterion 5 is still too loose.** It only checks price, which is why the mesh-top ranking passed. I would rewrite it to also require that the first result has the requested item type (e.g. "tee") in its title or tags, then rerun the eval. I stopped because this unit allows one change, and I spent it on the search fix itself.
+- **Wardrobe names aren't always written exactly.** My `suggest_outfit` spec promises wardrobe items are named exactly, but outfits often lowercase them ("the baggy straight-leg jeans, dark wash" instead of "Baggy straight-leg jeans, dark wash"). That's model output (`tools.py::suggest_outfit`). I'd add a criterion for it and tighten the prompt, or fix the casing in code after the model replies.
+- **Search only matches exact words.** "t-shirt" won't match "tee", and "sneaker" vs "trainers" won't match either, because `tools.py::search_listings` compares whole words. I'd add a small synonym list. I stopped here because none of my test queries hit it.
+- **The bad-key message repeats itself.** It says "Check GEMINI_API_KEY" twice, once from the error and once from my handler in `agent.py::run_agent`. Minor, but I'd trim my half.
 
 
 <!-- ═════════════════════════════════════════════════════════════════════
